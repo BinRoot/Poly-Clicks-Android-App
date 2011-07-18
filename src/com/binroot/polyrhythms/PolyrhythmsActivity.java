@@ -29,6 +29,7 @@ public class PolyrhythmsActivity extends Activity {
 	
 	private ArrayList<GraphicObject> _graphics = new ArrayList<GraphicObject>();
 	private ArrayList<LeftGraphic> leftGraphics = new ArrayList<LeftGraphic>();
+	private ArrayList<RightGraphic> rightGraphics = new ArrayList<RightGraphic>();
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -71,20 +72,20 @@ public class PolyrhythmsActivity extends Activity {
             leftGraphics.add(graphic4);
             
          // Right side
-            GraphicObject graphic1b = new GraphicObject(BitmapFactory.decodeResource(getResources(), R.drawable.icon));
+            RightGraphic graphic1b = new RightGraphic(BitmapFactory.decodeResource(getResources(), R.drawable.icon), null);
             graphic1b.getCoordinates().setX(400 - graphic.getGraphic().getWidth() / 2);
             graphic1b.getCoordinates().setY(100 - graphic.getGraphic().getHeight() / 2);
-            _graphics.add(graphic1b);
+            rightGraphics.add(graphic1b);
             
-            GraphicObject graphic2b = new GraphicObject(BitmapFactory.decodeResource(getResources(), R.drawable.icon));
+            RightGraphic graphic2b = new RightGraphic(BitmapFactory.decodeResource(getResources(), R.drawable.icon), graphic1b);
             graphic2b.getCoordinates().setX(400 - graphic.getGraphic().getWidth() / 2);
             graphic2b.getCoordinates().setY(250 - graphic.getGraphic().getHeight() / 2);
-            _graphics.add(graphic2b);
+            rightGraphics.add(graphic2b);
             
-            GraphicObject graphic3b = new GraphicObject(BitmapFactory.decodeResource(getResources(), R.drawable.icon));
+            RightGraphic graphic3b = new RightGraphic(BitmapFactory.decodeResource(getResources(), R.drawable.icon), graphic2b);
             graphic3b.getCoordinates().setX(400 - graphic.getGraphic().getWidth() / 2);
             graphic3b.getCoordinates().setY(400 - graphic.getGraphic().getHeight() / 2);
-            _graphics.add(graphic3b);
+            rightGraphics.add(graphic3b);
 
             
             
@@ -96,23 +97,22 @@ public class PolyrhythmsActivity extends Activity {
         public void onDraw(Canvas canvas) {
             canvas.drawColor(Color.BLACK);
             Bitmap bitmap;
-            Coordinates coords;
             
-            for (GraphicObject graphic : _graphics) {
+            for (RightGraphic graphic : rightGraphics) {
                 bitmap = graphic.getGraphic();
-                coords = graphic.getCoordinates();
-                canvas.drawBitmap(bitmap, coords.getX(), coords.getY(), null);
-                Paint p = new Paint();
-                p.setColor(Color.WHITE);
-                canvas.drawText(numOfTouch, new Float(100), new Float(100), p);
-                canvas.drawText(leftTouch, new Float(100), new Float(150), p);
-                canvas.drawText(rightTouch, new Float(100), new Float(180), p);
+                canvas.drawBitmap(bitmap,  graphic.getCoordinates().getX(),  graphic.getCoordinates().getY(), null);
             }
             
             for (LeftGraphic graphic : leftGraphics) {
                 bitmap = graphic.getGraphic();
                 canvas.drawBitmap(bitmap, graphic.getCoordinates().getX(), graphic.getCoordinates().getY(), null);
             }
+            
+            Paint p = new Paint();
+            p.setColor(Color.WHITE);
+            canvas.drawText(numOfTouch, new Float(100), new Float(100), p);
+            canvas.drawText(leftTouch, new Float(100), new Float(150), p);
+            canvas.drawText(rightTouch, new Float(100), new Float(180), p);
         }
         
         @Override
@@ -188,14 +188,19 @@ public class PolyrhythmsActivity extends Activity {
             	if(event.getAction() == MotionEvent.ACTION_DOWN) {
             		float x1 = event.getX();
             		float y1 = event.getY();
-            		for(GraphicObject gObj : _graphics) {
+            		for(RightGraphic gObj : rightGraphics) {
             			
             			int gx = gObj.getCoordinates().getX() + gObj.getGraphic().getWidth()/2;
             			int gy = gObj.getCoordinates().getY() + gObj.getGraphic().getHeight()/2;
             			if( (x1<gx+30) && (x1>gx-30) && (y1<gy+30) && (y1>gy-30)) {
             				// TODO: change graphics
-            				gObj.setGraphic(BitmapFactory.decodeResource(getResources(), R.drawable.icon2));
-            				break;
+            				
+            				if(gObj.getPrevGraphicState()==true) {
+            					gObj.setClicked(true);
+            					gObj.setGraphic(BitmapFactory.decodeResource(getResources(), R.drawable.icon2));
+                				break;
+            				}
+
             			}
             		}
             		for(LeftGraphic gObj : leftGraphics) {
@@ -305,8 +310,9 @@ public class PolyrhythmsActivity extends Activity {
 	 */
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if(item.getTitle().equals("Clear")) {
-			for(GraphicObject gObj : _graphics) {
+			for(RightGraphic gObj : rightGraphics) {
 				gObj.setGraphic(BitmapFactory.decodeResource(getResources(), R.drawable.icon));
+				gObj.setClicked(false);
 			}
 			for(LeftGraphic gObj : leftGraphics) {
 				gObj.setGraphic(BitmapFactory.decodeResource(getResources(), R.drawable.icon));
